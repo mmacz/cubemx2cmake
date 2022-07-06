@@ -1,0 +1,1 @@
+from .CubeMX2CMakeConverter import CubeMX2CMakeConverter

@@ -1,7 +1,7 @@
 #!/bin/python3
 import argparse
 from pathlib import Path
-from converter.CubeMX2CMakeConverter import CubeMX2CMakeConverter
+from converter import CubeMX2CMakeConverter
 
 def validate_args(args: argparse.Namespace) -> bool:
     ioc_file = Path(args.ioc)
