@@ -117,6 +117,26 @@ class CubeMX2CMakeConverter():
         template_content = template_content.replace("@INCLUDES@", comp_info['includes'])
         template_content = template_content.replace("@STARTUP@", comp_info['startup'])
         return template_content.replace("@LIBS@", comp_info['libs'])
+
+    def __get_memory_info(self, ldscript: str) -> dict:
+        memory = dict()
+        ram = dict()
+        flash = dict()
+
+        script = self.__ioc.parent / ldscript
+        ldscript_content = "".join(open(script, 'r').readlines())
+        ram_matcher = re.search(r'RAM \(xrw\)\s+: ORIGIN = ((0x|0X)?[a-fA-F0-9]+), LENGTH = (\d+K)', ldscript_content)
+        flash_matcher = re.search(r'FLASH \(rx\)\s+: ORIGIN = ((0x|0X)?[a-fA-F0-9]+), LENGTH = (\d+K)', ldscript_content)
+        
+        ram['origin'] = ram_matcher.group(1)
+        ram['size'] = ram_matcher.group(3)
+
+        flash['origin'] = flash_matcher.group(1)
+        flash['size'] = flash_matcher.group(3)
+
+        memory['ram'] = ram
+        memory['flash'] = flash
+        return memory
     
     def convert(self) -> None:
         project_info = self.__parse_ioc()
@@ -125,9 +145,22 @@ class CubeMX2CMakeConverter():
         output_cmakelists = self.__ioc.parent / "CMakeLists.txt"
         with open(output_cmakelists, 'w') as f:
             f.write(cmakelists_content)
+
         toolchain = Path(__file__).parent / "armv7-toolchain.cmake"
         toolchain_content = "".join(open(toolchain, 'r').readlines())
         target_toolchain = self.__ioc.parent / "armv7-toolchain.cmake"
         with open(target_toolchain, 'w') as f:
             f.write(toolchain_content)
 
+        meminfo = self.__get_memory_info(compilation_info['script'])
+        ram_info = meminfo['ram']
+        flash_info = meminfo['flash']
+
+        stlink = Path(__file__).parent / "stlink.cmake"
+        stlink_content = "".join(open(stlink, 'r').readlines())
+        stlink_content = stlink_content.replace("@PROJECT@", project_info['project'])
+        stlink_content = stlink_content.replace("@FLASH_ORIGIN@", flash_info['origin'])
+        stlink_content = stlink_content.replace("@FLASH_SIZE@", str.lower(flash_info['size']))
+        target_stlink = self.__ioc.parent / "stlink.cmake"
+        with open(target_stlink, 'w') as f:
+            f.write(stlink_content)

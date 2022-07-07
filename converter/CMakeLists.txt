@@ -8,6 +8,8 @@ project(@PROJECT@
     LANGUAGES ASM C CXX
 )
 
+include(stlink.cmake)
+
 add_executable(@PROJECT@.elf)
 target_sources(@PROJECT@.elf
     PRIVATE
