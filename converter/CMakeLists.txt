@@ -1,21 +1,6 @@
 cmake_minimum_required(VERSION 3.15)
 
-set(CMAKE_TRY_COMPILE_TARGET_TYPE STATIC_LIBRARY)
-set(CMAKE_SYSTEM_NAME Generic)
-set(CMAKE_SYSTEM_PROCESSOR armv7hf)
-
-set(CMAKE_C_COMPILER arm-none-eabi-gcc)
-set(CMAKE_CXX_COMPILER arm-none-eabi-g++)
-set(CMAKE_ASM_COMPILER ${CMAKE_C_COMPILER})
-set(CMAKE_AR arm-none-eabi-ar)
-set(CMAKE_OBJCOPY arm-none-eabi-objcopy)
-set(CMAKE_OBJDUMP arm-none-eabi-objdump)
-set(CMAKE_SIZE arm-none-eabi-size)
-
-set(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)
-set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)
-set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)
-
+set(CMAKE_TOOLCHAIN_FILE ${CMAKE_SOURCE_DIR}/armv7-toolchain.cmake)
 set(LINKER_SCRIPT ${CMAKE_SOURCE_DIR}/@LINKER_SCRIPT@)
 
 project(@PROJECT@

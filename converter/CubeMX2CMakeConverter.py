@@ -125,3 +125,9 @@ class CubeMX2CMakeConverter():
         output_cmakelists = self.__ioc.parent / "CMakeLists.txt"
         with open(output_cmakelists, 'w') as f:
             f.write(cmakelists_content)
+        toolchain = Path(__file__).parent / "armv7-toolchain.cmake"
+        toolchain_content = "".join(open(toolchain, 'r').readlines())
+        target_toolchain = self.__ioc.parent / "armv7-toolchain.cmake"
+        with open(target_toolchain, 'w') as f:
+            f.write(toolchain_content)
+
