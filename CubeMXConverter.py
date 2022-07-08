@@ -1,6 +1,5 @@
 #!/bin/python3
 import argparse
-from lib2to3.pytree import convert
 from pathlib import Path
 
 from converter.CMakeCubeMX import CMakeCubeMX
