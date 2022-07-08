@@ -12,14 +12,13 @@ class CMakeCubeMX:
             raise RuntimeError(f"Path: {self.__proj_root} is not directory")
         self.__config = dict()
 
-    def __parse_makefile(self) -> bool:
+    def __parse_makefile(self) -> dict:
         """Try to parse Makefile generated projet."""
-        self.__config = MakefileParser(self.__proj_root).parse()
-        print(self.__config)
-        return self.__config is not None
+        return MakefileParser(self.__proj_root).parse()
 
     def convert(self):
         """Convert CubeMX generated project to CMake."""
-        if not self.__parse_makefile():
+        config = self.__parse_makefile()
+        if config is None:
             warnings.warn("Makefile not present.")
-        pass
+        print(config)

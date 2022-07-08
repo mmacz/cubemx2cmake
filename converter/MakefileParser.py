@@ -39,16 +39,6 @@ class MakefileParser:
         inc_paths = [str(path).replace(" \\", "") for path in inc_paths]
         self.__config["inc_paths"] = inc_paths
 
-    def __set_compilation_flags(self):
-        asm_flags = f"{self.__config['mcu']} -Wall -fdata-sections -ffunction-sections"
-        c_flags = f"{self.__config['mcu']} -fdata-sections -ffunction-sections"
-        cpp_flags = f"{self.__config['mcu']} -fdata-sections -ffunction-sections"
-        flags = dict()
-        flags["asm"] = asm_flags
-        flags["c"] = c_flags
-        flags["cpp"] = cpp_flags
-        self.__config["comp_flags"] = flags
-
     def __extract_ld_script(self):
         ld_script_matcher = re.search("LDSCRIPT = (.+)", self.__content)
         self.__config["ldscript"] = ld_script_matcher.group(1)
@@ -69,16 +59,31 @@ class MakefileParser:
             sources.append(line)
         self.__config[f"{str.lower(lang)}_srcs"] = sources
 
+    def __set_compilation_flags(self):
+        asm_flags = f"{self.__config['mcu']} -Wall -fdata-sections -ffunction-sections"
+        c_flags = f"{self.__config['mcu']} -fdata-sections -ffunction-sections"
+        cpp_flags = f"{self.__config['mcu']} -fdata-sections -ffunction-sections"
+        flags = dict()
+        flags["asm"] = asm_flags
+        flags["c"] = c_flags
+        flags["cpp"] = cpp_flags
+        self.__config["comp_flags"] = flags
+
+    def __set_linker_flags(self):
+        ld_flags = f"{self.__config['mcu']} -T{self.__config['ldscript']}"
+        self.__config["ldflags"] = ld_flags
+
     def parse(self) -> dict:
         if self.__is_valid:
             self.__extract_project_name()
             self.__extract_mcu()
             self.__extract_c_defines()
             self.__extract_c_include_paths()
-            self.__set_compilation_flags()
             self.__extract_ld_script()
             self.__extract_sources("C")
             self.__extract_sources("ASM")
+            self.__set_compilation_flags()
+            self.__set_linker_flags()
             return self.__config
         else:
             return None
