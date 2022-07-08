@@ -10,11 +10,16 @@ project(@PROJECT@
 
 include(stlink.cmake)
 
+file(GLOB_RECURSE CPP_SOURCES "Src/*.cpp")
+
 add_executable(@PROJECT@.elf)
 target_sources(@PROJECT@.elf
     PRIVATE
         # C sources
 @SOURCES@
+
+        # CPP sources
+        ${CPP_SOURCES}
 
         # Startup file
         @STARTUP@
