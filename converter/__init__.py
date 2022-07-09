@@ -1,2 +1,2 @@
 from .CMakeCubeMX import CMakeCubeMX
-from .MakefileParser import MakefileParser
+from .MakefileConverter import MakefileConverter

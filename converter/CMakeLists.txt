@@ -30,11 +30,14 @@ target_include_directories(@PROJECT@.elf
 )
 
 target_compile_definitions(@PROJECT@.elf PUBLIC
-    @C_DEFS@ -D__weak=__attribute__\(\(weak\)\) -D__packed=__attribute__\(\(__packed__\)\)
+    @C_DEFS@ 
+    -D__weak=__attribute__\(\(weak\)\) 
+    -D__packed=__attribute__\(\(__packed__\)\)
 )
 
+
 target_compile_options(@PROJECT@.elf PRIVATE @CFLAGS@ -ffunction-sections -fdata-sections -Wall)
-target_link_options(@PROJECT@.elf PRIVATE @CFLAGS@ -specs=nano.specs -Wl,--gc-sections -T${LINKER_SCRIPT} -Wl,-Map=${PROJECT_BINARY_DIR}/HelloWorld.map,--cref)
+target_link_options(@PROJECT@.elf PRIVATE @CFLAGS@  -T${LINKER_SCRIPT} -specs=nano.specs -Wl,--gc-sections -Wl,-Map=${PROJECT_BINARY_DIR}/@PROJECT@.map,--cref)
 
 target_link_libraries(@PROJECT@.elf 
     PRIVATE

@@ -1,7 +1,8 @@
 from distutils.log import warn
 from pathlib import Path
+from pprint import pprint
 import warnings
-from converter.MakefileParser import MakefileParser
+from converter.MakefileConverter import MakefileConverter
 
 
 class CMakeCubeMX:
@@ -12,13 +13,16 @@ class CMakeCubeMX:
             raise RuntimeError(f"Path: {self.__proj_root} is not directory")
         self.__config = dict()
 
-    def __parse_makefile(self) -> dict:
+    def __handle_makefile(self) -> bool:
         """Try to parse Makefile generated projet."""
-        return MakefileParser(self.__proj_root).parse()
+        return MakefileConverter(self.__proj_root).convert()
 
-    def convert(self):
-        """Convert CubeMX generated project to CMake."""
-        config = self.__parse_makefile()
-        if config is None:
-            warnings.warn("Makefile not present.")
-        print(config)
+    def convert(self) -> bool:
+        """Convert CubeMX generated project to CMake.
+
+        For now it supports only Makefile projects.
+        """
+        if not self.__handle_makefile():
+            warnings.warn("Makefile not present or parsing error.")
+            return False
+        return True

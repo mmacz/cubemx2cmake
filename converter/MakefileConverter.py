@@ -2,7 +2,7 @@ from pathlib import Path
 import re
 
 
-class MakefileParser:
+class MakefileConverter:
     def __init__(self, path: Path):
         self.__file = path / "Makefile"
         self.__is_valid = self.__file.is_file()
@@ -59,10 +59,16 @@ class MakefileParser:
             sources.append(line)
         self.__config[f"{str.lower(lang)}_srcs"] = sources
 
+    def __extract_libs(self):
+        libs_matcher = re.search("LIBS = (.+)", self.__content)
+        libs = libs_matcher.group(1).split()
+        libs = [lib.replace("-l", "\t\t") for lib in libs]
+        self.__config["libs"] = libs
+
     def __set_compilation_flags(self):
-        asm_flags = f"{self.__config['mcu']} -Wall -fdata-sections -ffunction-sections"
-        c_flags = f"{self.__config['mcu']} -fdata-sections -ffunction-sections"
-        cpp_flags = f"{self.__config['mcu']} -fdata-sections -ffunction-sections"
+        asm_flags = f"{self.__config['mcu']}"
+        c_flags = f"{self.__config['mcu']}"
+        cpp_flags = f"{self.__config['mcu']}"
         flags = dict()
         flags["asm"] = asm_flags
         flags["c"] = c_flags
@@ -73,7 +79,8 @@ class MakefileParser:
         ld_flags = f"{self.__config['mcu']} -T{self.__config['ldscript']}"
         self.__config["ldflags"] = ld_flags
 
-    def parse(self) -> dict:
+    def __parse(self) -> bool:
+        """Parse Makefile."""
         if self.__is_valid:
             self.__extract_project_name()
             self.__extract_mcu()
@@ -82,8 +89,19 @@ class MakefileParser:
             self.__extract_ld_script()
             self.__extract_sources("C")
             self.__extract_sources("ASM")
+            self.__extract_libs()
             self.__set_compilation_flags()
             self.__set_linker_flags()
-            return self.__config
+            return True
         else:
-            return None
+            return False
+
+    def __handle_template(self) -> None:
+        pass
+
+    def convert(self) -> bool:
+        """Extract project information from Makefile and create target CMake project."""
+        if self.__parse():
+            self.__handle_template()
+        else:
+            return False
