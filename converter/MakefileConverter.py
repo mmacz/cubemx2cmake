@@ -1,6 +1,8 @@
 from pathlib import Path
 import re
 
+import sys
+
 
 class MakefileConverter:
     def __init__(self, path: Path):
@@ -97,11 +99,17 @@ class MakefileConverter:
             return False
 
     def __handle_template(self) -> None:
+        print(f"TODO: Implement: {__file__}: {sys._getframe().f_code.co_name}")
         pass
+
+    def __create_project(self) -> bool:
+        print(f"TODO: Implement: {__file__}: {sys._getframe().f_code.co_name}")
+        return True
 
     def convert(self) -> bool:
         """Extract project information from Makefile and create target CMake project."""
         if self.__parse():
             self.__handle_template()
+            return self.__create_project()
         else:
             return False
