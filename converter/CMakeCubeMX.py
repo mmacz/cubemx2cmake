@@ -1,6 +1,5 @@
 from distutils.log import warn
 from pathlib import Path
-from pprint import pprint
 import warnings
 from converter.MakefileConverter import MakefileConverter
 

@@ -10,34 +10,30 @@ project(@PROJECT@
 
 include(stlink.cmake)
 
-file(GLOB_RECURSE CPP_SOURCES "Src/*.cpp")
-
 add_executable(@PROJECT@.elf)
 target_sources(@PROJECT@.elf
     PRIVATE
+        # ASM sources
+        @ASM_SOURCES@
+
         # C sources
-@SOURCES@
-
-        # CPP sources
-        ${CPP_SOURCES}
-
-        # Startup file
-        @STARTUP@
+        @C_SOURCES@
 )
 target_include_directories(@PROJECT@.elf 
     PUBLIC
-@INCLUDES@
+        @INC_DIRS@
 )
 
-target_compile_definitions(@PROJECT@.elf PUBLIC
-    @C_DEFS@ 
-    -D__weak=__attribute__\(\(weak\)\) 
-    -D__packed=__attribute__\(\(__packed__\)\)
+target_compile_definitions(@PROJECT@.elf
+    PUBLIC
+        @C_DEFS@ 
+        -D__weak=__attribute__\(\(weak\)\) 
+        -D__packed=__attribute__\(\(__packed__\)\)
 )
 
 
 target_compile_options(@PROJECT@.elf PRIVATE @CFLAGS@ -ffunction-sections -fdata-sections -Wall)
-target_link_options(@PROJECT@.elf PRIVATE @CFLAGS@  -T${LINKER_SCRIPT} -specs=nano.specs -Wl,--gc-sections -Wl,-Map=${PROJECT_BINARY_DIR}/@PROJECT@.map,--cref)
+target_link_options(@PROJECT@.elf PRIVATE @LDFLAGS@  -T${LINKER_SCRIPT} -specs=nano.specs -Wl,--gc-sections -Wl,-Map=${PROJECT_BINARY_DIR}/@PROJECT@.map,--cref)
 
 target_link_libraries(@PROJECT@.elf 
     PRIVATE

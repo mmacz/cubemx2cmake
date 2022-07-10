@@ -1,5 +1,7 @@
 from pathlib import Path
+from pprint import pprint
 import re
+import shutil
 
 import sys
 
@@ -11,6 +13,13 @@ class MakefileConverter:
         if self.__is_valid:
             self.__read()
         self.__config = dict()
+        self.__is_touchgfx = self.__check_touchgfx_project()
+
+    def __check_touchgfx_project(self) -> bool:
+        touchgfx_dir = self.__file.parent / "TouchGFX"
+        if not touchgfx_dir.is_dir():
+            self.__config["touchgfx"] = ""
+            return False
 
     def __read(self):
         self.__content = "".join(open(self.__file, "r").readlines())
@@ -34,11 +43,13 @@ class MakefileConverter:
     def __extract_c_defines(self):
         c_defs = re.findall(r"-D(\w+)", self.__content)
         c_defs = [f"-D{cdef}" for cdef in c_defs]
+        c_defs = "\n\t\t".join(c_defs)
         self.__config["c_defs"] = c_defs
 
     def __extract_c_include_paths(self):
         inc_paths = re.findall(r"-I(.+)", self.__content)
         inc_paths = [str(path).replace(" \\", "") for path in inc_paths]
+        inc_paths = "\n\t\t".join(inc_paths)
         self.__config["inc_paths"] = inc_paths
 
     def __extract_ld_script(self):
@@ -59,12 +70,14 @@ class MakefileConverter:
                 break
             line = line.replace("\\", "").replace(" ", "")
             sources.append(line)
+        sources = "\n\t\t".join(sources)
         self.__config[f"{str.lower(lang)}_srcs"] = sources
 
     def __extract_libs(self):
         libs_matcher = re.search("LIBS = (.+)", self.__content)
         libs = libs_matcher.group(1).split()
         libs = [lib.replace("-l", "\t\t") for lib in libs]
+        libs = "\n".join(libs)
         self.__config["libs"] = libs
 
     def __set_compilation_flags(self):
@@ -78,8 +91,12 @@ class MakefileConverter:
         self.__config["comp_flags"] = flags
 
     def __set_linker_flags(self):
-        ld_flags = f"{self.__config['mcu']} -T{self.__config['ldscript']}"
+        ld_flags = f"{self.__config['mcu']}"
         self.__config["ldflags"] = ld_flags
+
+    def __parse_touchgfx_app(self):
+        print(f"TODO: Implement: {__file__}: {sys._getframe().f_code.co_name}")
+        pass
 
     def __parse(self) -> bool:
         """Parse Makefile."""
@@ -94,16 +111,53 @@ class MakefileConverter:
             self.__extract_libs()
             self.__set_compilation_flags()
             self.__set_linker_flags()
+            if self.__is_touchgfx:
+                self.__parse_touchgfx_app()
+
+            pprint(self.__config)
             return True
         else:
             return False
 
     def __handle_template(self) -> None:
-        print(f"TODO: Implement: {__file__}: {sys._getframe().f_code.co_name}")
-        pass
+        template_file = Path(__file__).parent / "CMakeLists.txt"
+        template_content = "".join(open(template_file, "r").readlines())
+        template_content = template_content.replace(
+            "@LINKER_SCRIPT@", self.__config["ldscript"]
+        )
+        template_content = template_content.replace("@PROJECT@", self.__config["name"])
+        template_content = template_content.replace(
+            "@ASM_SOURCES@", self.__config["asm_srcs"]
+        )
+        template_content = template_content.replace(
+            "@C_SOURCES@", self.__config["c_srcs"]
+        )
+        template_content = template_content.replace(
+            "@INC_DIRS@", self.__config["inc_paths"]
+        )
+        template_content = template_content.replace("@C_DEFS@", self.__config["c_defs"])
+        template_content = template_content.replace(
+            "@CFLAGS@", self.__config["comp_flags"]["c"]
+        )
+        template_content = template_content.replace(
+            "@LDFLAGS@", self.__config["ldflags"]
+        )
+        template_content = template_content.replace("@LIBS@", self.__config["libs"])
+        self.__cmake_project = template_content
 
     def __create_project(self) -> bool:
-        print(f"TODO: Implement: {__file__}: {sys._getframe().f_code.co_name}")
+        cmake_lists_file = self.__file.parent / "CMakeLists.txt"
+        with open(cmake_lists_file, "w") as f:
+            f.write(self.__cmake_project)
+        toolchain_file = "armv7-toolchain.cmake"
+        shutil.copy(
+            Path(__file__).parent / toolchain_file, self.__file.parent / toolchain_file
+        )
+        stlink_file = "stlink.cmake"
+        shutil.copy(
+            Path(__file__).parent / stlink_file, self.__file.parent / stlink_file
+        )
+
         return True
 
     def convert(self) -> bool:
