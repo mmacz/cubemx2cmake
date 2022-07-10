@@ -9,14 +9,3 @@ add_custom_target(Chip-Flash
     COMMENT "Flash chip with @PROJECT@.bin"
     DEPENDS @PROJECT@.elf
 )
-
-add_custom_target(Chip-Debug
-    COMMAND ${DEBUGGER} -tui -command ${CMAKE_SOURCE_DIR}/.gdbconf ${CMAKE_BINARY_DIR}/@PROJECT@.elf
-    COMMENT "Debug target application"
-    DEPENDS @PROJECT@.elf
-)
-
-add_custom_target(Debug-Server
-    COMMAND st-util --listen_port 2331
-    DEPENDS @PROJECT@.elf
-)

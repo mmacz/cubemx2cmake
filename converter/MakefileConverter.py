@@ -1,3 +1,4 @@
+from curses import flash
 from pathlib import Path
 from pprint import pprint
 import re
@@ -114,7 +115,7 @@ class MakefileConverter:
             if self.__is_touchgfx:
                 self.__parse_touchgfx_app()
 
-            pprint(self.__config)
+            # pprint(self.__config)
             return True
         else:
             return False
@@ -153,10 +154,29 @@ class MakefileConverter:
         shutil.copy(
             Path(__file__).parent / toolchain_file, self.__file.parent / toolchain_file
         )
+
+        # handle programming utlis
+        def get_flash_info(ldscript: Path) -> tuple:
+            content = "".join(open(ldscript, "r").readlines())
+            flash_matcher = re.search(
+                "FLASH\s+\(rx\)\s+:\s+ORIGIN = (0x[a-fA-F0-9]+),\s+LENGTH\s+=\s+(\d+.)",
+                content,
+            )
+            origin = flash_matcher.group(1)
+            size = flash_matcher.group(2).lower()
+            return origin, size
+
         stlink_file = "stlink.cmake"
-        shutil.copy(
-            Path(__file__).parent / stlink_file, self.__file.parent / stlink_file
+        origin, size = get_flash_info(self.__file.parent / self.__config["ldscript"])
+        stlink_content = "".join(
+            open(Path(__file__).parent / stlink_file, "r").readlines()
         )
+        stlink_content = stlink_content.replace("@PROJECT@", self.__config["name"])
+        stlink_content = stlink_content.replace("@FLASH_SIZE@", size)
+        stlink_content = stlink_content.replace("@FLASH_ORIGIN@", origin)
+
+        with open(self.__file.parent / stlink_file, "w") as f:
+            f.write(stlink_content)
 
         return True
 
