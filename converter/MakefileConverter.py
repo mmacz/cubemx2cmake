@@ -165,7 +165,8 @@ class MakefileConverter:
         with open(cmake_lists_file, "w") as f:
             f.write(self.__cmake_project)
 
-        os.mkdir(self.__file.parent / "cmake")
+        if not Path(self.__file.parent / "cmake").is_dir():
+            os.mkdir(self.__file.parent / "cmake")
 
         toolchain_file = "armv7-toolchain.cmake"
         shutil.copy(
