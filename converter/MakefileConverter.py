@@ -1,4 +1,3 @@
-from curses import flash
 from pathlib import Path
 from pprint import pprint
 import re
