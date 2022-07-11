@@ -18,6 +18,9 @@ target_sources(@PROJECT@.elf
 
         # C sources
         @C_SOURCES@
+
+        # Cpp sources
+        @CPP_SOURCES@
 )
 target_include_directories(@PROJECT@.elf 
     PUBLIC

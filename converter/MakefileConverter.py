@@ -18,9 +18,7 @@ class MakefileConverter:
 
     def __check_touchgfx_project(self) -> bool:
         touchgfx_dir = self.__file.parent / "TouchGFX"
-        if not touchgfx_dir.is_dir():
-            self.__config["touchgfx"] = ""
-            return False
+        return touchgfx_dir.is_dir()
 
     def __read(self):
         self.__content = "".join(open(self.__file, "r").readlines())
@@ -95,9 +93,23 @@ class MakefileConverter:
         ld_flags = f"{self.__config['mcu']}"
         self.__config["ldflags"] = ld_flags
 
-    def __parse_touchgfx_app(self):
-        print(f"TODO: Implement: {__file__}: {sys._getframe().f_code.co_name}")
-        pass
+    def __check_for_cpp_sources(self):
+        mxproject = self.__file.parent / ".mxproject"
+        if not mxproject.is_file():
+            self.__config["cpp_sources"] = ""
+            return
+
+        content = "".join(open(mxproject, "r").readlines())
+        src_files_count_matcher = re.search("SourceFileListSize=(\d+)", content)
+        file_cnt = int(src_files_count_matcher.group(1))
+        sources = list()
+        for idx in range(0, file_cnt):
+            src_file = Path(re.search(f"SourceFiles#{idx}=(.+)", content).group(1))
+            if src_file.suffix == ".cpp":
+                src_file = str(src_file).split(self.__config["name"])[1][1:]
+                sources.append(src_file)
+        sources = "\n\t\t".join(sources)
+        self.__config["cpp_sources"] = sources
 
     def __parse(self) -> bool:
         """Parse Makefile."""
@@ -108,12 +120,11 @@ class MakefileConverter:
             self.__extract_c_include_paths()
             self.__extract_ld_script()
             self.__extract_sources("C")
+            self.__check_for_cpp_sources()
             self.__extract_sources("ASM")
             self.__extract_libs()
             self.__set_compilation_flags()
             self.__set_linker_flags()
-            if self.__is_touchgfx:
-                self.__parse_touchgfx_app()
 
             # pprint(self.__config)
             return True
@@ -132,6 +143,9 @@ class MakefileConverter:
         )
         template_content = template_content.replace(
             "@C_SOURCES@", self.__config["c_srcs"]
+        )
+        template_content = template_content.replace(
+            "@CPP_SOURCES@", self.__config["cpp_sources"]
         )
         template_content = template_content.replace(
             "@INC_DIRS@", self.__config["inc_paths"]
