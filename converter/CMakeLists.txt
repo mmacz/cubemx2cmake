@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.15)
 
-set(CMAKE_TOOLCHAIN_FILE ${CMAKE_SOURCE_DIR}/armv7-toolchain.cmake)
+set(CMAKE_TOOLCHAIN_FILE ${CMAKE_SOURCE_DIR}/cmake/armv7-toolchain.cmake)
 set(LINKER_SCRIPT ${CMAKE_SOURCE_DIR}/@LINKER_SCRIPT@)
 
 project(@PROJECT@
@@ -8,7 +8,7 @@ project(@PROJECT@
     LANGUAGES ASM C CXX
 )
 
-include(stlink.cmake)
+include(cmake)
 
 add_executable(@PROJECT@.elf)
 target_sources(@PROJECT@.elf

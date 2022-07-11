@@ -2,6 +2,7 @@ from pathlib import Path
 from pprint import pprint
 import re
 import shutil
+import os
 
 import sys
 
@@ -163,9 +164,13 @@ class MakefileConverter:
         cmake_lists_file = self.__file.parent / "CMakeLists.txt"
         with open(cmake_lists_file, "w") as f:
             f.write(self.__cmake_project)
+
+        os.mkdir(self.__file.parent / "cmake")
+
         toolchain_file = "armv7-toolchain.cmake"
         shutil.copy(
-            Path(__file__).parent / toolchain_file, self.__file.parent / toolchain_file
+            Path(__file__).parent / toolchain_file,
+            self.__file.parent / "cmake" / toolchain_file,
         )
 
         # handle programming utlis
@@ -188,7 +193,7 @@ class MakefileConverter:
         stlink_content = stlink_content.replace("@FLASH_SIZE@", size)
         stlink_content = stlink_content.replace("@FLASH_ORIGIN@", origin)
 
-        with open(self.__file.parent / stlink_file, "w") as f:
+        with open(self.__file.parent / "cmake" / stlink_file, "w") as f:
             f.write(stlink_content)
 
         return True
