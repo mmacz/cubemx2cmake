@@ -64,12 +64,14 @@ class CubeIDEConverter:
         sources_count = self.__get_match("SourceFileListSize=(.+)", content)
         if sources_count.isdigit():
             sources_count = int(sources_count)
-        for i in range(0, sources_count):
-            src = self.__get_match(f"SourceFiles#{i}=(.+)", content).split(
-                self.__config["name"]
-            )[1][1:]
-            sources.append(src)
-        self.__config["sources"] = "\n\t\t".join(sources)
+            for i in range(0, sources_count):
+                src = self.__get_match(f"SourceFiles#{i}=(.+)", content).split(
+                    self.__config["name"]
+                )[1][1:]
+                sources.append(src)
+            self.__config["sources"] = "\n\t\t".join(sources)
+        else:
+            raise RuntimeError("Unsupported .mxproject content")
 
     def __get_cdefines(self, content: str):
         defines = self.__get_match("CDefines=(.+)", content)
