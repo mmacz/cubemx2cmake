@@ -60,18 +60,10 @@ class CubeIDEConverter:
         self.__config["include_dirs"] = "\n\t\t".join(inc_dirs)
 
     def __get_sources(self, content: str):
-        sources = list()
-        sources_count = self.__get_match("SourceFileListSize=(.+)", content)
-        if sources_count.isdigit():
-            sources_count = int(sources_count)
-            for i in range(0, sources_count):
-                src = self.__get_match(f"SourceFiles#{i}=(.+)", content).split(
-                    self.__config["name"]
-                )[1][1:]
-                sources.append(src)
-            self.__config["sources"] = "\n\t\t".join(sources)
-        else:
-            raise RuntimeError("Unsupported .mxproject content")
+        sources = self.__get_match("SourceFiles=(.+)", content)
+        sources = self.__get_split_list(sources)
+        sources = [src for src in sources if Path(self.__root / src).is_file()]
+        self.__config["sources"] = "\n\t\t".join(sources)
 
     def __get_cdefines(self, content: str):
         defines = self.__get_match("CDefines=(.+)", content)
@@ -147,6 +139,36 @@ class CubeIDEConverter:
         content = content.replace("@C_DEFS@", self.__config["cdefs"])
         return content
 
+    def __handle_touchgfx(self, content: str, templates_dir: Path):
+        if not self.__has_touchgfx:
+            start_block_idx = content.find("@TOUCHGFX_START@")
+            end_block_idx = content.find("@TOUCHGFX_END@")
+            end_block_len = len("@TOUCHGFX_END@") + 1
+            content = (
+                content[:start_block_idx] + content[end_block_idx + end_block_len :]
+            )
+            content = content.replace("@TOUCHGFX_LIB@", "")
+            return content, None
+        else:
+            content = content.replace("@TOUCHGFX_START@", "")
+            content = content.replace("@TOUCHGFX_END@", "")
+            content = content.replace("@TOUCHGFX_LIB@", "\n\t\tST::TouchGFX")
+
+            finder_template_file = templates_dir / "FindTouchGFX.cmake"
+            finder_template = "".join(open(finder_template_file, "r").readlines())
+
+            core = {"m4": "m4f", "m0": "m0", "m3": "m33"}[self.__config["core"]]
+            fp = "-float-abi-hard" if self.__hard_fp else ""
+            finder_template = finder_template.replace(
+                "@TOUCHGFX_MIDDLEWARES@", self.__touchgfx_path
+            )
+            gfx_root = str(self.__gfx_root).split(self.__config["name"])[1][1:]
+            finder_template = finder_template.replace("@TOUCHGFX_ROOT@", gfx_root)
+            finder_template = finder_template.replace("@CORE@", core)
+            finder_template = finder_template.replace("@HARD_FP@", fp)
+
+            return content, finder_template
+
     def __convert_project(self):
         target_cmake_dir = self.__root / "cmake"
         if not target_cmake_dir.is_dir():
@@ -165,10 +187,19 @@ class CubeIDEConverter:
 
         target_cmakelists_content = self.__prepare_cmakelists_file(cmake_templates_dir)
         target_cmakelists = self.__root / "CMakeLists.txt"
+
+        target_cmakelists_content, touchgfx_finder = self.__handle_touchgfx(
+            target_cmakelists_content, cmake_templates_dir
+        )
+
+        if touchgfx_finder is not None:
+            target_touchgfx_finder = target_cmake_dir / "FindTouchGFX.cmake"
+            with open(target_touchgfx_finder, "w") as f:
+                f.write(touchgfx_finder)
+
         with open(target_cmakelists, "w") as f:
             f.write(target_cmakelists_content)
 
     def convert(self):
         self.__parse_files()
         self.__convert_project()
-        # pprint(self.__config)
