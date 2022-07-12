@@ -1,6 +1,6 @@
 set(CMAKE_TRY_COMPILE_TARGET_TYPE STATIC_LIBRARY)
 set(CMAKE_SYSTEM_NAME Generic)
-set(CMAKE_SYSTEM_PROCESSOR armv7)
+set(CMAKE_SYSTEM_PROCESSOR armv7hf)
 
 set(CMAKE_C_COMPILER arm-none-eabi-gcc)
 set(CMAKE_CXX_COMPILER arm-none-eabi-g++)
@@ -14,3 +14,5 @@ set(DEBUGGER arm-none-eabi-gdb)
 set(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)
 set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)
 set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)
+
+set(CORE_FLAGS -mcpu=cortex-@CORE@ -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb)
