@@ -24,7 +24,7 @@ def parse_args() -> argparse.Namespace:
 
 def main() -> None:
     args = parse_args()
-    CubeIDEConverter(args.proj)
+    CubeIDEConverter(args.proj).convert()
 
 
 if __name__ == "__main__":
