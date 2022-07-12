@@ -15,4 +15,4 @@ set(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)
 set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)
 set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)
 
-set(CORE_FLAGS -mcpu=cortex-@CORE@ -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb)
+set(CORE_FLAGS -mcpu=cortex-@CORE@ -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -specs=nosys.specs -specs=nano.specs)
