@@ -2,6 +2,7 @@ from pathlib import Path
 from pprint import pprint
 import re
 import json
+import os
 
 
 class CubeIDEConverter:
@@ -54,16 +55,9 @@ class CubeIDEConverter:
         return result
 
     def __get_include_dirs(self, content: str):
-        dirs = list()
-        header_count = self.__get_match("HeaderFolderListSize=(.+)", content)
-        if header_count.isdigit():
-            header_count = int(header_count)
-        for i in range(0, header_count):
-            dir = self.__get_match(f"HeaderPath#{i}=(.+)", content).split(
-                self.__config["name"]
-            )[1][1:]
-            dirs.append(dir)
-        self.__config["include_dirs"] = "\n\t\t".join(dirs)
+        inc_dirs = self.__get_match("HeaderPath=(.+)", content)
+        inc_dirs = self.__get_split_list(inc_dirs)
+        self.__config["include_dirs"] = "\n\t\t".join(inc_dirs)
 
     def __get_sources(self, content: str):
         sources = list()
@@ -73,7 +67,7 @@ class CubeIDEConverter:
         for i in range(0, sources_count):
             src = self.__get_match(f"SourceFiles#{i}=(.+)", content).split(
                 self.__config["name"]
-            )[1]
+            )[1][1:]
             sources.append(src)
         self.__config["sources"] = "\n\t\t".join(sources)
 
@@ -104,13 +98,75 @@ class CubeIDEConverter:
 
         self.__config["core"] = app_config["Application"]["Platform"]
 
+    def __get_flash_info(self) -> tuple:
+        ldscript = self.__root / self.__config["ldscript"]
+        content = "".join(open(ldscript, "r").readlines())
+        flash_matcher = re.search(
+            "FLASH\s+\(rx\)\s+:\s+ORIGIN = (0x[a-fA-F0-9]+),\s+LENGTH\s+=\s+(\d+.)",
+            content,
+        )
+        origin = flash_matcher.group(1)
+        size = flash_matcher.group(2).lower()
+        self.__config["flash_origin"] = origin
+        self.__config["flash_size"] = size
+
     def __parse_files(self):
         self.__parse_mxproj()
+        self.__get_flash_info()
         if self.__has_touchgfx:
             self.__parse_touchgfx()
-        # pprint(self.__config)
-        pass
+
+    def __prepare_toolchain_file(self, templates_dir: Path):
+        fp = "hf" if self.__hard_fp else ""
+        toolchain_file = f"armv7{fp}-toolchain.cmake"
+        self.__config["toolchain"] = toolchain_file
+
+        toolchain_file = templates_dir / toolchain_file
+        content = "".join(open(toolchain_file, "r").readlines())
+        content = content.replace("@CORE@", self.__config["core"])
+        return content
+
+    def __prepare_stlink_file(self, templates_dir: Path):
+        stlink_file = templates_dir / "stlink.cmake"
+        content = "".join(open(stlink_file, "r").readlines())
+        content = content.replace("@PROJECT@", self.__config["name"])
+        content = content.replace("@FLASH_SIZE@", self.__config["flash_size"])
+        content = content.replace("@FLASH_ORIGIN@", self.__config["flash_origin"])
+        return content
+
+    def __prepare_cmakelists_file(self, templates_dir: Path):
+        cmakelists_file = templates_dir / "CMakeLists.txt"
+        content = "".join(open(cmakelists_file, "r").readlines())
+        content = content.replace("@TOOLCHAIN_FILE@", self.__config["toolchain"])
+        content = content.replace("@LINKER_SCRIPT@", self.__config["ldscript"])
+        content = content.replace("@PROJECT@", self.__config["name"])
+        content = content.replace("@SOURCES@", self.__config["sources"])
+        content = content.replace("@INC_DIRS@", self.__config["include_dirs"])
+        content = content.replace("@C_DEFS@", self.__config["cdefs"])
+        return content
+
+    def __convert_project(self):
+        target_cmake_dir = self.__root / "cmake"
+        if not target_cmake_dir.is_dir():
+            os.mkdir(target_cmake_dir)
+
+        cmake_templates_dir = Path(__file__).parent / "cmake"
+        target_toolchain_content = self.__prepare_toolchain_file(cmake_templates_dir)
+        target_toolchain = target_cmake_dir / self.__config["toolchain"]
+        with open(target_toolchain, "w") as f:
+            f.write(target_toolchain_content)
+
+        target_stlink_content = self.__prepare_stlink_file(cmake_templates_dir)
+        target_stlink = target_cmake_dir / "stlink.cmake"
+        with open(target_stlink, "w") as f:
+            f.write(target_stlink_content)
+
+        target_cmakelists_content = self.__prepare_cmakelists_file(cmake_templates_dir)
+        target_cmakelists = self.__root / "CMakeLists.txt"
+        with open(target_cmakelists, "w") as f:
+            f.write(target_cmakelists_content)
 
     def convert(self):
         self.__parse_files()
-        pass
+        self.__convert_project()
+        # pprint(self.__config)

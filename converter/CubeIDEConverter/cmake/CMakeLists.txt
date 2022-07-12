@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.15)
 
-set(CMAKE_TOOLCHAIN_FILE ${CMAKE_SOURCE_DIR}/cmake/armv7@FP@-toolchain.cmake)
+set(CMAKE_TOOLCHAIN_FILE ${CMAKE_SOURCE_DIR}/cmake/@TOOLCHAIN_FILE@)
 set(LINKER_SCRIPT ${CMAKE_SOURCE_DIR}/@LINKER_SCRIPT@)
 
 project(@PROJECT@
@@ -10,11 +10,13 @@ project(@PROJECT@
 
 include(cmake)
 
+file(GLOB_RECURSE STARTUP_FILE "Core/*.s")
+
 add_executable(@PROJECT@.elf)
 target_sources(@PROJECT@.elf
     PRIVATE
         # ASM
-        @STARTUP@
+        ${STARTUP_FILE}
 
         # Sources C + Cpp
         @SOURCES@
