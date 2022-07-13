@@ -12,6 +12,7 @@ include(cmake)
 
 @TOUCHGFX_START@
 list(PREPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
+set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} -fno-rtti)
 find_package(TouchGFX REQUIRED)
 @TOUCHGFX_END@
 file(GLOB_RECURSE STARTUP_FILE "Core/*.s")
