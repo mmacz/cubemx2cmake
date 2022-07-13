@@ -1,1 +1,1 @@
-from .converter import CubeIDEConverter, MakefileConverter
+from .converter import CubeIDEConverter
