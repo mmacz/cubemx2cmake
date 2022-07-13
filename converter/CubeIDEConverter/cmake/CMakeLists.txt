@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.15)
 
-set(CMAKE_TOOLCHAIN_FILE ${CMAKE_SOURCE_DIR}/cmake/armv7-toolchain.cmake)
+set(CMAKE_TOOLCHAIN_FILE ${CMAKE_SOURCE_DIR}/cmake/@TOOLCHAIN_FILE@)
 set(LINKER_SCRIPT ${CMAKE_SOURCE_DIR}/@LINKER_SCRIPT@)
 
 project(@PROJECT@
@@ -10,17 +10,21 @@ project(@PROJECT@
 
 include(cmake)
 
+@TOUCHGFX_START@
+list(PREPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
+set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} -fno-rtti)
+find_package(TouchGFX REQUIRED)
+@TOUCHGFX_END@
+file(GLOB_RECURSE STARTUP_FILE "Core/*.s")
+
 add_executable(@PROJECT@.elf)
 target_sources(@PROJECT@.elf
     PRIVATE
-        # ASM sources
-        @ASM_SOURCES@
+        # ASM
+        ${STARTUP_FILE}
 
-        # C sources
-        @C_SOURCES@
-
-        # Cpp sources
-        @CPP_SOURCES@
+        # Sources C + Cpp
+        @SOURCES@
 )
 target_include_directories(@PROJECT@.elf 
     PUBLIC
@@ -35,12 +39,14 @@ target_compile_definitions(@PROJECT@.elf
 )
 
 
-target_compile_options(@PROJECT@.elf PRIVATE @CFLAGS@ -ffunction-sections -fdata-sections -Wall)
-target_link_options(@PROJECT@.elf PRIVATE @LDFLAGS@  -T${LINKER_SCRIPT} -specs=nano.specs -Wl,--gc-sections -Wl,-Map=${PROJECT_BINARY_DIR}/@PROJECT@.map,--cref)
+target_compile_options(@PROJECT@.elf PRIVATE ${CORE_FLAGS} -ffunction-sections -fdata-sections -Wall)
+target_link_options(@PROJECT@.elf PRIVATE ${CORE_FLAGS} -T${LINKER_SCRIPT} -Wl,--gc-sections -Wl,-Map=${PROJECT_BINARY_DIR}/@PROJECT@.map,--cref)
 
 target_link_libraries(@PROJECT@.elf 
     PRIVATE
-@LIBS@
+        c
+        m
+        nosys@TOUCHGFX_LIB@
 )
 
 add_custom_command(TARGET @PROJECT@.elf POST_BUILD

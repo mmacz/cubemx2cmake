@@ -2,7 +2,7 @@
 import argparse
 from pathlib import Path
 
-from converter.CMakeCubeMX import CMakeCubeMX
+from converter import CubeIDEConverter
 
 
 def validate_args(args: argparse.Namespace) -> bool:
@@ -24,7 +24,7 @@ def parse_args() -> argparse.Namespace:
 
 def main() -> None:
     args = parse_args()
-    CMakeCubeMX(args.proj).convert()
+    CubeIDEConverter(args.proj).convert()
 
 
 if __name__ == "__main__":
