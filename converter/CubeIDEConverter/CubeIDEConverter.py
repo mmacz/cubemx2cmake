@@ -6,8 +6,9 @@ import os
 
 
 class CubeIDEConverter:
-    def __init__(self, project_path: Path, hard_fp: bool = True):
+    def __init__(self, project_path: Path, core: str = "m4", hard_fp: bool = True):
         self.__config = dict()
+        self.__config["core"] = core
         self.__hard_fp = hard_fp
         self.__validate_project(project_path)
         self.__check_touchgfx(project_path)
@@ -55,12 +56,12 @@ class CubeIDEConverter:
         return result
 
     def __get_include_dirs(self, content: str):
-        inc_dirs = self.__get_match("HeaderPath=(.+)", content)
+        inc_dirs = self.__get_match("HeaderPath=(\w.+)", content)
         inc_dirs = self.__get_split_list(inc_dirs)
         self.__config["include_dirs"] = "\n\t\t".join(inc_dirs)
 
     def __get_sources(self, content: str):
-        sources = self.__get_match("SourceFiles=(.+)", content)
+        sources = self.__get_match("SourceFiles=(\w.+)", content)
         sources = self.__get_split_list(sources)
         sources = [src for src in sources if Path(self.__root / src).is_file()]
         self.__config["sources"] = "\n\t\t".join(sources)
