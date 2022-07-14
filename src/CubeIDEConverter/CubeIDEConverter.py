@@ -88,7 +88,9 @@ class CubeIDEConverter:
         path = app_config["Application"]["TouchGfxPath"].replace(
             "..", str(self.__root.absolute())
         )
-        self.__touchgfx_path = path.split(self.__config["name"])[1][1:]
+        self.__touchgfx_path = path.split(self.__config["name"])
+        if len(self.__touchgfx_path) > 1:
+            self.__touchgfx_path = self.__touchgfx_path[1][1:]
 
         self.__config["core"] = app_config["Application"]["Platform"]
 
@@ -162,7 +164,11 @@ class CubeIDEConverter:
             finder_template = finder_template.replace(
                 "@TOUCHGFX_MIDDLEWARES@", self.__touchgfx_path
             )
-            gfx_root = str(self.__gfx_root).split(self.__config["name"])[1][1:]
+            gfx_root = str(self.__gfx_root).split(self.__config["name"])
+            if len(gfx_root) > 1:
+                gfx_root = gfx_root[1][1:]
+            else:
+                gfx_root = gfx_root[0]
             finder_template = finder_template.replace("@TOUCHGFX_ROOT@", gfx_root)
             finder_template = finder_template.replace("@CORE@", core)
             finder_template = finder_template.replace("@HARD_FP@", fp)
