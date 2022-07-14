@@ -5,7 +5,35 @@ import os
 
 
 class converter:
+    """Converter class.
+
+    Attributes:
+    ------------
+    project_path : Path
+        Path to the project directory that contains the *.ioc file.
+    core : str
+        Expected core to be used, defaulted to m4.
+    hard_fp : bool
+        Switch to represent whcih ABI to be used.
+
+    Methods:
+    ------------
+    convert():
+        Performs conversion from CubeIDE to CMake.
+    """
+
     def __init__(self, project_path: Path, core: str = "m4", hard_fp: bool = True):
+        """Construct all the necesarry attributes for the converter class.
+
+        Parameters:
+        ------------
+            project_path : Path
+                A path to the root of the project.
+            core : str
+                Core representation.
+            hard_fp : bool
+                Flag indicating if hardware floating point ABI should be used.
+        """
         self.__config = dict()
         self.__config["core"] = core
         self.__hard_fp = hard_fp
@@ -207,5 +235,14 @@ class converter:
             f.write(target_cmakelists_content)
 
     def convert(self):
+        """Convert project to CMake.
+
+        Parameters:
+        --------------
+        None
+        Returns:
+        --------------
+        None
+        """
         self.__parse_files()
         self.__convert_project()
