@@ -2,10 +2,10 @@
 README.rst
 setup.cfg
 setup.py
-src/CubeIDEConverter/CubeIDEConverter.py
-src/CubeIDEConverter/__init__.py
-src/CubeIDEConverter/cmake/CMakeLists.txt
-src/CubeIDEConverter/cmake/FindTouchGFX.cmake
-src/CubeIDEConverter/cmake/armv7-toolchain.cmake
-src/CubeIDEConverter/cmake/armv7hf-toolchain.cmake
-src/CubeIDEConverter/cmake/stlink.cmake
+src/cubeide_converter/__init__.py
+src/cubeide_converter/cubeide_converter.py
+src/cubeide_converter/cmake/CMakeLists.txt
+src/cubeide_converter/cmake/FindTouchGFX.cmake
+src/cubeide_converter/cmake/armv7-toolchain.cmake
+src/cubeide_converter/cmake/armv7hf-toolchain.cmake
+src/cubeide_converter/cmake/stlink.cmake

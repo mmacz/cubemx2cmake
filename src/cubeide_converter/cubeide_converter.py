@@ -4,7 +4,7 @@ import json
 import os
 
 
-class CubeIDEConverter:
+class converter:
     def __init__(self, project_path: Path, core: str = "m4", hard_fp: bool = True):
         self.__config = dict()
         self.__config["core"] = core
