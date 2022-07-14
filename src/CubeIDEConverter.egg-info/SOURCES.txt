@@ -1,0 +1,9 @@
+README.md
+setup.cfg
+setup.py
+src/CubeIDEConverter/CubeIDEConverter.py
+src/CubeIDEConverter/__init__.py
+src/CubeIDEConverter.egg-info/PKG-INFO
+src/CubeIDEConverter.egg-info/SOURCES.txt
+src/CubeIDEConverter.egg-info/dependency_links.txt
+src/CubeIDEConverter.egg-info/top_level.txt
