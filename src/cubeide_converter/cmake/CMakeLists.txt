@@ -14,6 +14,11 @@ add_compile_options(
     -fdata-sections
     -Wall
 )
+add_definitions(
+    @C_DEFS@ 
+    -D__weak=__attribute__\(\(weak\)\) 
+    -D__packed=__attribute__\(\(__packed__\)\)
+)
 
 list(PREPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 include(stlink)
@@ -34,12 +39,6 @@ target_include_directories(Drivers
     PUBLIC
         @DRIVER_INC_DIRS@
 )
-target_compile_definitions(Drivers
-    PUBLIC
-        @C_DEFS@ 
-        -D__weak=__attribute__\(\(weak\)\) 
-        -D__packed=__attribute__\(\(__packed__\)\)
-)
 add_library(ST::Drivers ALIAS Drivers)
 
 # Custom modules start
@@ -57,12 +56,6 @@ target_sources(@PROJECT@.elf
 target_include_directories(@PROJECT@.elf 
     PUBLIC
         @PROJECT_INC_DIRS@
-)
-target_compile_definitions(@PROJECT@.elf
-    PUBLIC
-        @C_DEFS@ 
-        -D__weak=__attribute__\(\(weak\)\) 
-        -D__packed=__attribute__\(\(__packed__\)\)
 )
 target_link_options(@PROJECT@.elf 
     PRIVATE
