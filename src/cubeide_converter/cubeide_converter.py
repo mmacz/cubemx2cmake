@@ -85,13 +85,31 @@ class converter:
     def __get_include_dirs(self, content: str):
         inc_dirs = self.__get_match("HeaderPath=(\w.+)", content)
         inc_dirs = self.__get_split_list(inc_dirs)
-        self.__config["include_dirs"] = "\n\t\t".join(inc_dirs)
+        project_inc_dirs = list()
+        drivers_inc_dirs = list()
+        for inc_dir in inc_dirs:
+            if "Drivers" in inc_dir:
+                drivers_inc_dirs.append(inc_dir)
+            else:
+                if "Core" in inc_dir:
+                    drivers_inc_dirs.append(inc_dir)
+                project_inc_dirs.append(inc_dir)
+        self.__config["project_inc_dirs"] = "\n\t\t".join(project_inc_dirs)
+        self.__config["driver_inc_dirs"] = "\n\t\t".join(drivers_inc_dirs)
 
     def __get_sources(self, content: str):
         sources = self.__get_match("SourceFiles=(\w.+)", content)
         sources = self.__get_split_list(sources)
         sources = [src for src in sources if Path(self.__root / src).is_file()]
-        self.__config["sources"] = "\n\t\t".join(sources)
+        project_sources = list()
+        driver_sources = list()
+        for src in sources:
+            if "Drivers" in src:
+                driver_sources.append(src)
+            else:
+                project_sources.append(src)
+        self.__config["project_sources"] = "\n\t\t".join(project_sources)
+        self.__config["driver_sources"] = "\n\t\t".join(driver_sources)
 
     def __get_cdefines(self, content: str):
         defines = self.__get_match("CDefines=(.+)", content)
@@ -164,8 +182,10 @@ class converter:
         content = content.replace("@TOOLCHAIN_FILE@", self.__config["toolchain"])
         content = content.replace("@LINKER_SCRIPT@", self.__config["ldscript"])
         content = content.replace("@PROJECT@", self.__config["name"])
-        content = content.replace("@SOURCES@", self.__config["sources"])
-        content = content.replace("@INC_DIRS@", self.__config["include_dirs"])
+        content = content.replace("@PROJECT_SOURCES@", self.__config["project_sources"])
+        content = content.replace("@DRIVER_SOURCES@", self.__config["driver_sources"])
+        content = content.replace("@PROJECT_INC_DIRS@", self.__config["project_inc_dirs"])
+        content = content.replace("@DRIVER_INC_DIRS@", self.__config["driver_inc_dirs"])
         content = content.replace("@C_DEFS@", self.__config["cdefs"])
         return content
 

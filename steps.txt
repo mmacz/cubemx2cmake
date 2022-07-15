@@ -1,5 +1,5 @@
 1. Create ~/.pypirc file with local repo information
 
 2. Upload package with:
-~/python_project $ python setup.py sdist upload -r local
+~/python_project $ python3 setup.py sdist upload -r local
 
