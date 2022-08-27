@@ -22,28 +22,15 @@ add_definitions(
 
 list(PREPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 include(stlink)
+find_package(STDrivers REQUIRED)
 @TOUCHGFX_START@
 set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} -fno-rtti)
 find_package(TouchGFX REQUIRED)
 @TOUCHGFX_END@
-file(GLOB_RECURSE STARTUP_FILE "Core/*.s")
-
-add_library(Drivers STATIC)
-target_sources(Drivers
-    PRIVATE
-
-    # Driver sources
-        @DRIVER_SOURCES@
-)
-target_include_directories(Drivers
-    PUBLIC
-        @DRIVER_INC_DIRS@
-)
-add_library(ST::Drivers ALIAS Drivers)
-
 # Custom modules start
 # Custom modules end
 
+file(GLOB_RECURSE STARTUP_FILE "Core/*.s")
 add_executable(@PROJECT@.elf)
 target_sources(@PROJECT@.elf
     PRIVATE
@@ -69,6 +56,8 @@ target_link_libraries(@PROJECT@.elf
         m
         nosys
         ST::Drivers@TOUCHGFX_LIB@
+        # Custom libraries link start
+        # Custom libraries linke end
 )
 
 add_custom_command(TARGET @PROJECT@.elf POST_BUILD

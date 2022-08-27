@@ -1,0 +1,21 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+      {
+        "name": "Cortex Debug",
+        "cwd": "${workspaceRoot}",
+        "executable": "${workspaceRoot}/build/${workspaceFolderBasename}.elf",
+        "request": "launch",
+        "type": "cortex-debug",
+        "servertype": "stutil",
+        "runToMain": true,
+        "device": "STM32F411RE",
+        "v1": false,
+        "configFiles": [
+          "interface/stlink.cfg",
+          "target/stm32f4x.cfg"
+        ],
+        "preLaunchTask": "flash-openocd"
+      }
+    ]
+  }

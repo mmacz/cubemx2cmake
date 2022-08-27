@@ -5,7 +5,12 @@ setup.py
 src/cubeide_converter/__init__.py
 src/cubeide_converter/cubeide_converter.py
 src/cubeide_converter/cmake/CMakeLists.txt
+src/cubeide_converter/cmake/FindSTDrivers.cmake
 src/cubeide_converter/cmake/FindTouchGFX.cmake
 src/cubeide_converter/cmake/armv7-toolchain.cmake
 src/cubeide_converter/cmake/armv7hf-toolchain.cmake
 src/cubeide_converter/cmake/stlink.cmake
+src/cubeide_converter/vscode/c_cpp_properties.json
+src/cubeide_converter/vscode/launch.json
+src/cubeide_converter/vscode/settings.json
+src/cubeide_converter/vscode/tasks.json

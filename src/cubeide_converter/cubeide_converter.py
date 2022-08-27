@@ -2,6 +2,7 @@ from pathlib import Path
 import re
 import json
 import os
+import shutil
 
 
 class converter:
@@ -22,7 +23,7 @@ class converter:
         Performs conversion from CubeIDE to CMake.
     """
 
-    def __init__(self, project_path: Path, core: str = "m4", hard_fp: bool = True):
+    def __init__(self, project_path: Path, core: str = "m4", hard_fp: bool = True, is_vscode: bool = False):
         """Construct all the necesarry attributes for the converter class.
 
         Parameters:
@@ -33,6 +34,8 @@ class converter:
                 Core representation.
             hard_fp : bool
                 Flag indicating if hardware floating point ABI should be used.
+            is_vscode : bool
+                Flag indicating if vscode files should be created.
         """
         self.__config = dict()
         self.__config["core"] = core
@@ -40,6 +43,8 @@ class converter:
         self.__validate_project(project_path)
         self.__check_touchgfx(project_path)
         self.__root = project_path
+        self.__is_vscode = is_vscode
+        self.__version = "2.0"
 
     def __check_touchgfx(self, path: Path) -> bool:
         self.__has_touchgfx = False
@@ -118,8 +123,14 @@ class converter:
         defines = [f"-D{d}" for d in defines]
         self.__config["cdefs"] = "\n\t\t".join(defines)
 
+    def __is_advanced_directory_structure(self, content: str) -> bool:
+        result = self.__get_match("AdvancedFolderStructure=(\w.+)", content)
+        return True if result == "true" else False
+
     def __parse_mxproj(self):
         content = "".join(open(self.__mxproj, "r").readlines())
+        if not self.__is_advanced_directory_structure(content):
+            raise RuntimeError("Tool supports only Advanced diretory structure")
         self.__get_include_dirs(content)
         self.__get_sources(content)
         self.__get_cdefines(content)
@@ -183,10 +194,15 @@ class converter:
         content = content.replace("@LINKER_SCRIPT@", self.__config["ldscript"])
         content = content.replace("@PROJECT@", self.__config["name"])
         content = content.replace("@PROJECT_SOURCES@", self.__config["project_sources"])
-        content = content.replace("@DRIVER_SOURCES@", self.__config["driver_sources"])
         content = content.replace("@PROJECT_INC_DIRS@", self.__config["project_inc_dirs"])
-        content = content.replace("@DRIVER_INC_DIRS@", self.__config["driver_inc_dirs"])
         content = content.replace("@C_DEFS@", self.__config["cdefs"])
+        return content
+
+    def __handle_find_drivers(self, templates_dir: Path):
+        find_file = templates_dir / "FindSTDrivers.cmake"
+        content = "".join(open(find_file, 'r').readlines())
+        content = content.replace("@DRIVER_SOURCES@", self.__config["driver_sources"])
+        content = content.replace("@DRIVER_INC_DIRS@", self.__config["driver_inc_dirs"])
         return content
 
     def __handle_touchgfx(self, content: str, templates_dir: Path):
@@ -242,6 +258,11 @@ class converter:
         target_cmakelists_content = self.__prepare_cmakelists_file(cmake_templates_dir)
         target_cmakelists = self.__root / "CMakeLists.txt"
 
+        target_drivers_finder = target_cmake_dir / "FindSTDrivers.cmake"
+        find_drivers_content = self.__handle_find_drivers(cmake_templates_dir)
+        with open(target_drivers_finder, 'w') as f:
+            f.write(find_drivers_content)
+
         target_cmakelists_content, touchgfx_finder = self.__handle_touchgfx(
             target_cmakelists_content, cmake_templates_dir
         )
@@ -253,6 +274,20 @@ class converter:
 
         with open(target_cmakelists, "w") as f:
             f.write(target_cmakelists_content)
+
+    def __handle_vscode_deps(self):
+        vscode_templates_dir = Path(__file__).parent / "vscode"
+        target_vscode_dir = Path(self.__root) / ".vscode"
+        if not target_vscode_dir.is_dir():
+            Path.mkdir(target_vscode_dir)
+        else:
+            for f in vscode_templates_dir.iterdir():
+                src = str(f)
+                dst = str(target_vscode_dir / f.name)
+                shutil.copy(src, dst)
+
+    def get_version(self) -> str:
+        return self.__version
 
     def convert(self):
         """Convert project to CMake.
@@ -266,3 +301,6 @@ class converter:
         """
         self.__parse_files()
         self.__convert_project()
+        if self.__is_vscode:
+            self.__handle_vscode_deps()
+

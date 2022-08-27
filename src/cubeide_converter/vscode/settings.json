@@ -1,0 +1,10 @@
+{
+    "cmake.sourceDirectory": "${workspaceFolder}/.",
+    "cmake.buildDirectory": "${workspaceFolder}/build",
+    "cortex-debug.armToolchainPath": "/Applications/ARM/bin",
+    "cortex-debug.openocdPath": "/usr/local/bin/openocd",
+    "C_Cpp.intelliSenseMemoryLimit": 8192,
+    "files.associations": {
+        "array": "cpp"
+    }
+}
