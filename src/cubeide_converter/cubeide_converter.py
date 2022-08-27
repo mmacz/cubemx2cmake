@@ -287,6 +287,15 @@ class converter:
                 shutil.copy(src, dst)
 
     def get_version(self) -> str:
+        """Get version of this tool.
+
+        Parameters:
+        ---------------
+        None
+        Returns:
+        ---------------
+        None
+        """
         return self.__version
 
     def convert(self):
