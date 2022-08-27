@@ -2,9 +2,6 @@
     "configurations": [
         {
             "name": "STM32",
-            "includePath": [],
-            "defines": [],
-            "compilerPath": "/Applications/ARM/bin/arm-none-eabi-gcc",
             "configurationProvider": "ms-vscode.cmake-tools"
         }
     ],
