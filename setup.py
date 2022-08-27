@@ -2,7 +2,7 @@ from distutils.core import setup
 
 setup(
     name="cubeide_converter",
-    version="2.0",
+    version="2.0.1",
     license="GPL 3.0",
     author="Marek Mącznik",
     author_email="marek.macznik@gmail.com",

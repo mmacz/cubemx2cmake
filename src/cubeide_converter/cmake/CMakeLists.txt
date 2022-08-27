@@ -27,8 +27,8 @@ find_package(STDrivers REQUIRED)
 set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} -fno-rtti)
 find_package(TouchGFX REQUIRED)
 @TOUCHGFX_END@
-# Custom modules start
-# Custom modules end
+# USER DEPS START
+# USER DEPS END
 
 file(GLOB_RECURSE STARTUP_FILE "Core/*.s")
 add_executable(@PROJECT@.elf)
@@ -56,8 +56,8 @@ target_link_libraries(@PROJECT@.elf
         m
         nosys
         ST::Drivers@TOUCHGFX_LIB@
-        # Custom libraries link start
-        # Custom libraries linke end
+        # USER LIBS START
+# USER LIBS END
 )
 
 add_custom_command(TARGET @PROJECT@.elf POST_BUILD

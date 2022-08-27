@@ -44,7 +44,9 @@ class converter:
         self.__check_touchgfx(project_path)
         self.__root = project_path
         self.__is_vscode = is_vscode
-        self.__version = "2.0"
+        self.__version = "2.0.1"
+        self.__target_cmakelists = Path(self.__root) / "CMakeLists.txt"
+        self.__has_cmakelists = self.__target_cmakelists.is_file()
 
     def __check_touchgfx(self, path: Path) -> bool:
         self.__has_touchgfx = False
@@ -186,6 +188,22 @@ class converter:
         content = content.replace("@FLASH_SIZE@", self.__config["flash_size"])
         content = content.replace("@FLASH_ORIGIN@", self.__config["flash_origin"])
         return content
+    
+    def __handle_user_defined_parts(self, cmakelists: Path, content: str) -> str:
+        existing_content = "".join(open(cmakelists, 'r').readlines())
+        deps_start = existing_content.find("# USER DEPS START")
+        deps_end = existing_content.find("# USER DEPS END")
+
+        libs_start = existing_content.find("# USER LIBS START")
+        libs_end = existing_content.find("# USER LIBS END")
+
+        existing_deps = existing_content[deps_start:deps_end]
+        existing_libs = existing_content[libs_start:libs_end]
+
+        content = content.replace("# USER DEPS START\n", existing_deps)
+        content = content.replace("# USER LIBS START\n", existing_libs)
+        return content
+
 
     def __prepare_cmakelists_file(self, templates_dir: Path):
         cmakelists_file = templates_dir / "CMakeLists.txt"
@@ -196,6 +214,8 @@ class converter:
         content = content.replace("@PROJECT_SOURCES@", self.__config["project_sources"])
         content = content.replace("@PROJECT_INC_DIRS@", self.__config["project_inc_dirs"])
         content = content.replace("@C_DEFS@", self.__config["cdefs"])
+        if self.__has_cmakelists:
+            content = self.__handle_user_defined_parts(self.__target_cmakelists, content)
         return content
 
     def __handle_find_drivers(self, templates_dir: Path):
